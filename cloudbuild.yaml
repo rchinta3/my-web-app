@@ -8,7 +8,7 @@ steps:
   args: ['push', 'gcr.io/abcdef-1sdf/my-app']
   id: 'Push Docker image to GCR'
 
-- name: 'gcr.io/cloud-builders/gcloud'
+- name: 'ubuntu'
   entrypoint: 'bash'
   args:
   - '-c'
@@ -29,5 +29,5 @@ images:
 
 availableSecrets:
   secretManager:
-    - versionName: projects/612443613779/secrets/myapp/versions/latest
-      env: SSH_PRIVATE_KEY
+    - versionName: 'projects/612443613779/secrets/myapp/versions/latest'
+      env: 'SSH_PRIVATE_KEY'

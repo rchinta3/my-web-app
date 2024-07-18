@@ -9,14 +9,25 @@ steps:
   id: 'Push Docker image to GCR'
 
 - name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: 'bash'
   args:
-  - 'compute'
-  - 'instances'
-  - 'update-container'
-  - 'public-vm'
-  - '--zone=us-central1-a'
-  - '--container-image=gcr.io/abcdef-1sdf/my-app'
-  id: 'Deploy to Compute Engine'
+  - '-c'
+  - |
+    # Retrieve the SSH private key from Secret Manager
+    echo "$SSH_PRIVATE_KEY" > /home/rchinta3/.ssh/id_rsa
+    chmod 400 /home/rchinta3/.ssh/id_rsa
+
+    # Add the host to known_hosts to avoid interactive prompt
+    ssh-keyscan -H 34.135.79.45 >> /home/rchinta3/.ssh/known_hosts
+
+    # Use the SSH private key to connect and deploy
+    ssh -i /home/rchinta3/.ssh/id_rsa -o StrictHostKeyChecking=no rchinta3@34.135.79.45 'docker pull gcr.io/abcdef-1sdf/my-app && docker run -d -p 80:80 gcr.io/abcdef-1sdf/my-app'
+  id: 'Deploy to Ubuntu Machine'
 
 images:
 - 'gcr.io/abcdef-1sdf/my-app'
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/612443613779/secrets/myapp/versions/latest
+      env: SSH_PRIVATE_KEY

@@ -1,6 +1,4 @@
-options:
-  logging: CLOUD_LOGGING_ONLY
-  logsBucket: gs://rc05logs/
+logsBucket: gs://rc05logs/
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/abcdef-1sdf/my-app', '.']

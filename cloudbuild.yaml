@@ -1,4 +1,3 @@
-logsBucket: gs://rc05logs/
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/abcdef-1sdf/my-app', '.']
@@ -8,13 +7,13 @@ steps:
   args: ['push', 'gcr.io/abcdef-1sdf/my-app']
   id: 'Push Docker image to GCR'
 
-- name: 'ubuntu'
+- name: 'ubuntu'  # Using ubuntu base image for bash commands
   entrypoint: 'bash'
   args:
   - '-c'
   - |
     # Retrieve the SSH private key from Secret Manager
-    echo "$SSH_PRIVATE_KEY" > /home/rchinta3/.ssh/id_rsa
+    echo "$_SECRETS_MYAPP" > /home/rchinta3/.ssh/id_rsa
     chmod 400 /home/rchinta3/.ssh/id_rsa
 
     # Add the host to known_hosts to avoid interactive prompt
@@ -30,4 +29,4 @@ images:
 availableSecrets:
   secretManager:
     - versionName: 'projects/612443613779/secrets/myapp/versions/latest'
-      env: 'SSH_PRIVATE_KEY'
+      env: 'MYAPP'  # This matches the part after _SECRETS_ in the step script

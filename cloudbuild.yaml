@@ -1,0 +1,21 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/abcdef-1sdf/my-app', '.']
+  id: 'Build Docker image'
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/abcdef-1sdf/my-app']
+  id: 'Push Docker image to GCR'
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+  - 'compute'
+  - 'instances'
+  - 'update-container'
+  - 'public-vm'
+  - '--zone=us-central1-a'
+  - '--container-image=gcr.io/abcdef-1sdf/my-app'
+  id: 'Deploy to Compute Engine'
+
+images:
+- 'gcr.io/abcdef-1sdf/my-app'

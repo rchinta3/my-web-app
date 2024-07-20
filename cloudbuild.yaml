@@ -29,4 +29,4 @@ steps:
     ssh-keyscan -H 34.135.79.45 >> ~/root/.ssh/known_hosts && \\
     
     # Connect to Compute Engine instance and run Docker commands
-    gcloud compute ssh your-instance-name --zone=us-central1-a --command 'docker pull gcr.io/abcdef-1sdf/my-app && docker run -d -p 80:80 gcr.io/abcdef-1sdf/my-app'
+    gcloud compute ssh 34.135.79.45 --zone=us-central1-a --command 'docker pull gcr.io/abcdef-1sdf/my-app && docker run -d -p 80:80 gcr.io/abcdef-1sdf/my-app'

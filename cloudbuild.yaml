@@ -18,7 +18,7 @@ steps:
 
       chmod 600 /tmp/ssh_key
 
-      ssh-keyscan -H 34.135.79.45 >> ~/home/rchinta3/.ssh/known_hosts
+      ssh-keyscan -H 34.135.79.45 >> ~/.ssh/known_hosts
 
       ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no rchinta3@34.135.79.45 \
         'docker pull gcr.io/abcdef-1sdf/my-app && docker run -d -p 80:80 gcr.io/abcdef-1sdf/my-app'

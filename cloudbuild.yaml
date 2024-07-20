@@ -1,32 +1,33 @@
-steps:
+ Logs bucket configuration
+logsBucket: "gs://rc05logs/"
+
+
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/abcdef-1sdf/my-app', '.']
   id: 'Build Docker image'
+
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/abcdef-1sdf/my-app']
   id: 'Push Docker image to GCR'
 
-- name: 'ubuntu'  # Using ubuntu base image for bash commands
+
+- name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args:
   - '-c'
   - |
-    # Retrieve the SSH private key from Secret Manager
-    echo "$_SECRETS_MYAPP" > /home/rchinta3/.ssh/id_rsa
-    chmod 400 /home/rchinta3/.ssh/id_rsa
 
-    # Add the host to known_hosts to avoid interactive prompt
-    ssh-keyscan -H 34.135.79.45 >> /home/rchinta3/.ssh/known_hosts
+    gcloud secrets versions access latest --secret=myapp > /tmp/ssh_key
 
-    # Use the SSH private key to connect and deploy
-    ssh -i /home/rchinta3/.ssh/id_rsa -o StrictHostKeyChecking=no rchinta3@34.135.79.45 'docker pull gcr.io/abcdef-1sdf/my-app && docker run -d -p 80:80 gcr.io/abcdef-1sdf/my-app'
-  id: 'Deploy to Ubuntu Machine'
 
-images:
-- 'gcr.io/abcdef-1sdf/my-app'
+    chmod 600 /tmp/ssh_key
 
-availableSecrets:
-  secretManager:
-    - versionName: 'projects/612443613779/secrets/myapp/versions/latest'
-      env: 'MYAPP'  # This matches the part after _SECRETS_ in the step script
+
+    ssh-keyscan -H 34.135.79.45 >> ~/.ssh/known_hosts
+
+
+    ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no rchinta3@34.135.79.45 'docker pull gcr.io/abcdef-1sdf/my-app && docker run -d -p 80:80 gcr.io/abcdef-1sdf/my-app'
+
+ 
+    rm /tmp/ssh_key

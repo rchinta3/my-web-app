@@ -1,5 +1,3 @@
-logsBucket: "gs://rc05logs/"
-
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/abcdef-1sdf/my-app', '.']
@@ -10,17 +8,24 @@ steps:
   id: 'Push Docker image to GCR'
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: 'bash'
+  id: 'Connect to instance'
+  entrypoint: /bin/sh
   args:
-    - '-c'
-    - |
-      gcloud secrets versions access latest --secret=myapp > /tmp/ssh_key
-
-      chmod 600 /tmp/ssh_key
-
-      ssh-keyscan -H 34.135.79.45 >> ~/.ssh/known_hosts
-
-      ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no rchinta3@34.135.79.45 \
-        'docker pull gcr.io/abcdef-1sdf/my-app && docker run -d -p 80:80 gcr.io/abcdef-1sdf/my-app'
-
-      rm /tmp/ssh_key
+  - '-c'
+  - |
+    # Create .ssh directory and set permissions
+    mkdir -p ~/root/.ssh && \\
+    
+    # Retrieve private key from Secret Manager and set permissions
+    gcloud secrets versions access latest --secret=cloud-build-ssh-key > ~/root/.ssh/id_rsa && \\
+    chmod 600 ~/root/.ssh/id_rsa && \\
+    
+    # Retrieve public key from Secret Manager and set permissions
+    gcloud secrets versions access latest --secret=cloud-build-ssh-key-pub > ~/root/.ssh/id_rsa.pub && \\
+    chmod 600 ~/root/.ssh/id_rsa.pub && \\
+    
+    # Add remote host to known hosts
+    ssh-keyscan -H 34.135.79.45 >> ~/root/.ssh/known_hosts && \\
+    
+    # Connect to Compute Engine instance and run Docker commands
+    gcloud compute ssh your-instance-name --zone=us-central1-a --command 'docker pull gcr.io/abcdef-1sdf/my-app && docker run -d -p 80:80 gcr.io/abcdef-1sdf/my-app'
